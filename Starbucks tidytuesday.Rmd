@@ -1,0 +1,106 @@
+---
+title: "Starbucks tidytuesday"
+author: "Hui Yi Xuan"
+date: "2023-01-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+This is the Official Starbucks Nutritional dataset from the pdf Starbucks Coffee 
+Company Beverage Nutrition Information. 
+
+
+## Plot 1 
+
+The insight we obtained from this graph is that the amount of caffeine is associated 
+to calories content in Starbucks drinks. There is a greater likelihood that if a 
+cup of coffee has more calories, the amount of caffeine (mg) is lesser too. 
+
+The target audience are technical audience who might be interested in the trends
+of the drinks Starbucks offers. 
+
+geom_point is chosen to represent the many points so that it is easier for 
+observations of the widespread amount of drinks. 
+geom_smooth is chosen to map out the correlation more clearly for the viewer. 
+
+A different shade of red is chosen to represent the varying amount of caffeine
+for the drinks so that it will be easier to observe, would be helpful especially
+since Starbucks is well-known for its coffee, hence it is assumed that most of 
+their consumers will go for the drinks with higher caffeine. 
+
+
+
+```{r}
+
+library(tidyverse)
+library(ggplot2)
+
+
+tuesdata <- tidytuesdayR::tt_load('2021-12-21')
+tuesdata <- tidytuesdayR::tt_load(2021, week = 52)
+
+starbucks <- tuesdata$starbucks
+
+
+starbucks <- starbucks %>%
+  group_by(product_name) %>%
+  mutate(max_serv_size = max(serv_size_m_l), max_cal = max(calories)) 
+
+sbuck <- starbucks %>%
+  filter(serv_size_m_l == max_serv_size & calories == max_cal) %>%
+  group_by(product_name) %>%
+  slice(1) %>%
+  filter(size != "1 scoop")
+
+ggplot(sbuck, aes(x=caffeine_mg, y=max_cal))+
+  geom_point(aes(color = max_cal), position = "jitter") + 
+  scale_color_gradient(low="pink", high = "red") +
+  labs(x= "Calories", y= "Caffeine(mg)", title= "Caffeine vs Calories content in Starbucks Drinks") +
+  geom_smooth(method=lm) +
+  theme_light()
+ 
+  
+```
+
+## Plot 2 
+The insight we obtained from this graph is that the more sugar added to each drink, 
+the amount of calories is higher too. 
+
+The target audience are layman audience who might be interested to check the content
+of their drinks before deciding which product to purchase from starbucks.  This is 
+especially so for health consicious drinkers. 
+
+While the graphs might be too small as there are many drinks, I chose to compromise
+that and illustrate all drinks because it would be helpful if all drinks are 
+featured especially since our target audience are consumers who are deciding 
+which drink to buy, or who would like to check out and compare the few of their
+favourite drinks. 
+
+```{r }
+starbucks %>% 
+  mutate(
+    product_name = factor(product_name),
+    product_name = fct_reorder(product_name, calories)
+  ) %>% 
+  filter(calories > 200)  %>% 
+  ggplot(aes(x = sugar_g, y = calories, color = product_name)) +
+  geom_point(size = 1, shape = 5) +
+  facet_wrap(~product_name, labeller = label_wrap_gen(15)) +
+  theme_void(base_size = 4) +
+  theme(
+    text = element_text(color = "black", size = 5),
+    axis.title.y = element_text(angle = 90),
+    axis.title.x = element_text(size = 5),
+    axis.text.y = element_text(size = 5),
+    legend.position = "none",
+    panel.spacing = unit(3, "lines"),
+    plot.margin = margin(10, 10, 10, 10),
+    plot.caption = element_text(hjust = 0)
+  ) +
+  labs(title = "Calories vs Sugar added", y = "Calories (kcal)", x = "Sugar (g)")
+
+```
