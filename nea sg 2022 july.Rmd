@@ -1,0 +1,45 @@
+---
+title: "nea sg 2022 July data"
+author: "Hui Yi Xuan"
+date: "2023-01-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+Practising web-scrapping from https://www.nea.gov.sg/weather/rain-areas which displays radar scans around Singapore. Here is a downloaded map via webscrapping of a  240km radar scans
+between 2022-07-31 01:00:00 (am) and 2022-07-31 03:00:00 (am) at five-minute intervals, inclusive of end
+points.
+
+
+
+```{r }
+neaurl1 <-"https://www.nea.gov.sg/docs/default-source/rain-area/dpsri_70km_2022073101000000dBR.dpsri.png"
+neaurl2 <- "https://www.nea.gov.sg/docs/default-source/rain-area/dpsri_70km_2022073101050000dBR.dpsri.png"
+return_val <- download.file(neaurl1, "../data/neapng", mode = "wb")
+return_val <- download.file(neaurl2, "../data/neapng", mode = "wb")
+
+
+#store URLs in a vector 
+timevector <- c(100,105,110,115,120,125,130,135,140,145,150,155,200,205,210,215,220,225,230,235,240,245,250,255,300)
+
+urlvector <- c() #create empty vector for URL 
+for (i in timevector) {
+  urlgenerator <- paste0("https://www.nea.gov.sg/docs/default-source/rain-area/dpsri_70km_202207310", i, "0000dBR.dpsri.png")
+  urlvector <- c(urlvector, urlgenerator)
+}
+
+destination <- c("nea1","nea2","nea3","nea4","nea5","nea6","nea7","nea8","nea9","nea10","nea11","nea12","nea13","nea14","nea15","nea16","nea17","nea18","nea19","nea20","nea21","nea22","nea23","nea24","nea25")
+
+for (j in 1:length(urlvector)){
+    download.file(urlvector[j], destfile =  destination[j], mode = 'wb')
+}
+zip("../data/nea.zip",  destination)
+unlink(destination)
+
+```
+
+
